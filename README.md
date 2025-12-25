@@ -41,10 +41,10 @@ To-do-list/
 ├── signin.html         # User registration page
 ├── main.html           # Main dashboard
 ├── style.css           # Application styles
-├── login.js           # Login page logic
+├── login.js            # Login page logic
 ├── signin.js           # Signup page logic
 ├── main.js             # Main dashboard logic
-├── timetable.js          # Schedule view module
+├── timetable.js        # Timetable view module
 └── timeline.js         # Timeline view module
 ```
 
@@ -60,7 +60,7 @@ To-do-list/
 
 2. Open the project folder
 
-3. Double-click `index.html` or open it in your web browser
+3. And Enjoy!!
 
 ### Usage
 
