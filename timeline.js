@@ -1,10 +1,22 @@
 const TimelineModule = (() => {
     // State
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let tasks = [];
     let container = null;
 
-    function init(viewContainer) {
+    // Fetch tasks from backend
+    async function fetchTasksFromServer() {
+        try {
+            const res = await fetch('http://localhost:5000/timeline-tasks');
+            tasks = await res.json();
+        } catch (err) {
+            console.error('Error fetching timeline tasks:', err);
+        }
+    }
+
+    // Initialize module
+    async function init(viewContainer) {
         container = viewContainer;
+        await fetchTasksFromServer();
         renderTimeline();
     }
 
@@ -26,13 +38,14 @@ const TimelineModule = (() => {
                         <button class="view-tab active" data-view="timeline">Timeline</button>
                     </div>
                 </div>
-                <button class="primary-btn" onclick="window.openModal(null)">
+                <button class="primary-btn" onclick="window.openTimelineModal(null)">
                     + Add New Task
                 </button>
             </div>
             <div id="timelineGrid" class="timeline-list"></div>
         `;
-        const timelineGrid = document.getElementById('timelineGrid');
+
+        const timelineGrid = container.querySelector('#timelineGrid');
 
         const sortedTasks = tasks.sort((a, b) => {
             if (a.date !== b.date) return a.date.localeCompare(b.date);
@@ -44,14 +57,14 @@ const TimelineModule = (() => {
             return;
         }
 
-        // Group by Date
+        // Group tasks by date
         const grouped = {};
         sortedTasks.forEach(task => {
             if (!grouped[task.date]) grouped[task.date] = [];
             grouped[task.date].push(task);
         });
 
-        // Loop through dates
+        // Render each date group
         Object.keys(grouped).forEach(date => {
             const groupTasks = grouped[date];
             const dateObj = new Date(date);
@@ -60,13 +73,13 @@ const TimelineModule = (() => {
             const groupEl = document.createElement('div');
             groupEl.className = 'timeline-group';
 
-            let tasksHtml = groupTasks.map(task => `
+            const tasksHtml = groupTasks.map(task => `
                 <div class="timeline-item">
                     <div class="t-row">
                         <span class="t-time">${task.time}</span>
-                        <span class="t-name">${task.name}</span>
+                        <span class="t-name">${task.name}${task.desc ? `<span class=\"t-desc\" style=\"font-weight:normal; color:#555; padding-left:80px;\">${task.desc}</span>` : ''}</span>
                         <div class="actions">
-                             <button onclick="window.editTask('timeline', '${task.id}')" class="action-btn edit-btn" style="margin-right:8px;">Edit</button>
+                            <button onclick="window.editTask('timeline', '${task.id}')" class="action-btn edit-btn" style="margin-right:8px;">Edit</button>
                             <button onclick="TimelineModule.deleteTask('${task.id}')" class="action-btn delete-btn">Delete</button>
                         </div>
                     </div>
@@ -81,37 +94,42 @@ const TimelineModule = (() => {
         });
     }
 
-    function saveTask(taskData) {
-        // taskData: { id (optional), name, date, time, desc }
-        if (taskData.id) {
-            // Update
-            const index = tasks.findIndex(t => t.id === taskData.id);
-            if (index !== -1) {
-                tasks[index] = { ...tasks[index], ...taskData };
-            }
-        } else {
-            // Create
-            const newTask = {
-                id: Date.now().toString(),
-                ...taskData
-            };
-            tasks.push(newTask);
+    // Save or update task
+    async function saveTask(taskData) {
+        if (!taskData.id) taskData.id = Date.now().toString();
+
+        try {
+            const res = await fetch('http://localhost:5000/timeline-tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            });
+            const savedTask = await res.json();
+
+            const index = tasks.findIndex(t => t.id === savedTask.id);
+            if (index !== -1) tasks[index] = savedTask;
+            else tasks.push(savedTask);
+
+            renderTimeline();
+            window.dispatchEvent(new CustomEvent('timelineUpdated'));
+        } catch (err) {
+            console.error('Error saving task:', err);
         }
-
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-        renderTimeline();
-        window.dispatchEvent(new CustomEvent('timelineUpdated'));
-        return true;
     }
 
-    function deleteTask(id) {
-        tasks = tasks.filter(t => t.id !== id);
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-        renderTimeline();
-        // Trigger global stats update if needed
-        window.dispatchEvent(new CustomEvent('timelineUpdated'));
+    // Delete task
+    async function deleteTask(id) {
+        try {
+            await fetch(`http://localhost:5000/timeline-tasks/${id}`, { method: 'DELETE' });
+            tasks = tasks.filter(t => t.id !== id);
+            renderTimeline();
+            window.dispatchEvent(new CustomEvent('timelineUpdated'));
+        } catch (err) {
+            console.error('Error deleting task:', err);
+        }
     }
 
+    // Get specific task
     function getTask(id) {
         return tasks.find(t => t.id === id);
     }

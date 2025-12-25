@@ -47,51 +47,73 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Routine View -->
-            <div id="routineView" class="view-container active">
+            <div id="routineContainer" class="view-container active">
                 <!-- Content handled by routine.js -->
             </div>
 
             <!-- Timeline View -->
-            <div id="timelineView" class="view-container" style="display:none;">
+            <div id="timelineContainer" class="view-container" style="display:none;">
                 <!-- Content handled by timeline.js -->
             </div>
         </main>
     </div>
 
-    <!-- Modal -->
-    <div id="taskModal" class="modal">
+    <!-- Routine Modal -->
+    <div id="routineModal" class="modal">
         <div class="modal-content clean-modal">
-            <span class="close-modal">&times;</span>
-            <h2 id="modalTitle">Create New Task</h2>
-            <form id="taskForm">
-                <input type="hidden" id="taskId">
+            <span class="close-modal" id="closeRoutineModal">&times;</span>
+            <h2 id="routineModalTitle">Create New Routine Task</h2>
+            <form id="routineTaskForm">
+                <input type="hidden" id="routineTaskId">
+                <input type="hidden" id="routineTaskDay">
                 <div class="input-group">
-                    <label for="taskName">Task Name</label>
-                    <input type="text" id="taskName" required placeholder="What needs to be done?">
+                    <label for="routineTaskName">Task Name</label>
+                    <input type="text" id="routineTaskName" required placeholder="What needs to be done?">
                 </div>
-                <!-- Dynamic Content Area -->
-                <div id="modalDateFields">
-                    <div class="form-row">
-                        <div class="input-group">
-                            <label for="taskDate">Date</label>
-                            <input type="date" id="taskDate" required>
-                        </div>
-                        <div class="input-group">
-                            <label for="taskTime">Time</label>
-                            <input type="time" id="taskTime" required>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="input-group">
-                    <label for="taskDesc">Description (Optional)</label>
-                    <textarea id="taskDesc" rows="3" placeholder="Add details..."></textarea>
+                    <label for="routineTaskTime">Time (24h)</label>
+                    <input type="text" id="routineTaskTime" class="time-24h" placeholder="HH:MM" maxlength="5" required>
+                </div>
+                <div class="input-group">
+                    <label for="routineTaskDesc">Description (Optional)</label>
+                    <textarea id="routineTaskDesc" rows="3" placeholder="Add details..."></textarea>
                 </div>
                 <button type="submit" class="primary-btn full-width">Save Task</button>
             </form>
         </div>
     </div>
 
+    <!-- Timeline Modal -->
+    <div id="timelineModal" class="modal">
+        <div class="modal-content clean-modal">
+            <span class="close-modal" id="closeTimelineModal">&times;</span>
+            <h2 id="timelineModalTitle">Create New Timeline Task</h2>
+            <form id="timelineTaskForm">
+                <input type="hidden" id="timelineTaskId">
+                <div class="input-group">
+                    <label for="timelineTaskName">Task Name</label>
+                    <input type="text" id="timelineTaskName" required placeholder="What needs to be done?">
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="timelineTaskDate">Date</label>
+                        <input type="date" id="timelineTaskDate" max="9999-12-31" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="timelineTaskTime">Time (24h)</label>
+                        <input type="text" id="timelineTaskTime" class="time-24h" placeholder="HH:MM" maxlength="5" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="timelineTaskDesc">Description (Optional)</label>
+                    <textarea id="timelineTaskDesc" rows="3" placeholder="Add details..."></textarea>
+                </div>
+                <button type="submit" class="primary-btn full-width">Save Task</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS Modules -->
     <script src="timeline.js"></script>
     <script src="routine.js"></script>
     <script src="home.js"></script>

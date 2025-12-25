@@ -1,6 +1,6 @@
 const RoutineModule = (() => {
     // State
-    let routines = JSON.parse(localStorage.getItem('routines')) || [];
+    let routines = [];
     let container = null;
     let clockInterval = null;
 
@@ -8,8 +8,20 @@ const RoutineModule = (() => {
         'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
     ];
 
-    function init(viewContainer) {
+    // Fetch tasks from backend
+    async function fetchTasksFromServer() {
+        try {
+            const res = await fetch('http://localhost:5000/tasks');
+            routines = await res.json();
+        } catch (err) {
+            console.error('Error fetching tasks:', err);
+        }
+    }
+
+    // Initialize module
+    async function init(viewContainer) {
         container = viewContainer;
+        await fetchTasksFromServer();
         renderRoutineView();
     }
 
@@ -21,7 +33,6 @@ const RoutineModule = (() => {
     }
 
     function startClock() {
-        // Clear any existing interval
         if (clockInterval) clearInterval(clockInterval);
 
         const clockEl = document.getElementById('liveClock');
@@ -34,6 +45,7 @@ const RoutineModule = (() => {
         }
     }
 
+    // Render routine tasks
     function renderRoutineView() {
         container.innerHTML = `
             <div class="content-header">
@@ -47,6 +59,7 @@ const RoutineModule = (() => {
             </div>
             <div id="routineList" class="timeline-list"></div>
         `;
+
         startClock();
         const routineList = document.getElementById('routineList');
 
@@ -61,9 +74,9 @@ const RoutineModule = (() => {
             if (dayTasks.length > 0) {
                 tasksHtml = dayTasks.map(task => `
                     <div class="timeline-item">
-                        <div class="t-row">
+                        <div class="t-row" style="align-items: center;">
                             <span class="t-time">${task.time}</span>
-                            <span class="t-name">${task.name}</span>
+                            <span class="t-name">${task.name}${task.desc ? `<span class=\"t-desc\" style=\"font-weight:normal; color:#555; padding-left:80px;\">${task.desc}</span>` : ''}</span>
                             <div class="actions">
                                 <button onclick="window.editTask('routine', '${task.id}')" class="action-btn edit-btn" style="margin-right:8px;">Edit</button>
                                 <button onclick="RoutineModule.deleteTask('${task.id}')" class="action-btn delete-btn">Delete</button>
@@ -78,7 +91,7 @@ const RoutineModule = (() => {
             groupEl.innerHTML = `
                 <div class="timeline-date">
                     <span>${day}</span>
-                    <button class="add-day-task-btn" onclick="window.openModal({ day: '${day}' })" title="Add task to ${day}">
+                    <button class="add-day-task-btn" onclick="window.openRoutineModal({ day: '${day}' })" title="Add task to ${day}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     </button>
                 </div>
@@ -88,35 +101,42 @@ const RoutineModule = (() => {
         });
     }
 
-    function saveTask(taskData) {
-        // taskData: { id (optional), day, name, time, desc }
-        if (taskData.id) {
-            // Update
-            const index = routines.findIndex(t => t.id === taskData.id);
-            if (index !== -1) {
-                routines[index] = { ...routines[index], ...taskData };
-            }
-        } else {
-            // Create
-            const newTask = {
-                id: Date.now().toString(),
-                ...taskData
-            };
-            routines.push(newTask);
+    // Save or update a task
+    async function saveTask(taskData) {
+        if (!taskData.id) taskData.id = Date.now().toString();
+
+        try {
+            const res = await fetch('http://localhost:5000/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            });
+            const savedTask = await res.json();
+
+            const index = routines.findIndex(t => t.id === savedTask.id);
+            if (index !== -1) routines[index] = savedTask;
+            else routines.push(savedTask);
+
+            renderRoutineView();
+            window.dispatchEvent(new CustomEvent('routineUpdated'));
+        } catch (err) {
+            console.error('Error saving task:', err);
         }
-
-        localStorage.setItem('routines', JSON.stringify(routines));
-        renderRoutineView();
-        window.dispatchEvent(new CustomEvent('routineUpdated'));
     }
 
-    function deleteTask(id) {
-        routines = routines.filter(t => t.id !== id);
-        localStorage.setItem('routines', JSON.stringify(routines));
-        renderRoutineView();
-        window.dispatchEvent(new CustomEvent('routineUpdated'));
+    // Delete a task
+    async function deleteTask(id) {
+        try {
+            await fetch(`http://localhost:5000/tasks/${id}`, { method: 'DELETE' });
+            routines = routines.filter(t => t.id !== id);
+            renderRoutineView();
+            window.dispatchEvent(new CustomEvent('routineUpdated'));
+        } catch (err) {
+            console.error('Error deleting task:', err);
+        }
     }
 
+    // Get a specific task
     function getTask(id) {
         return routines.find(t => t.id === id);
     }
