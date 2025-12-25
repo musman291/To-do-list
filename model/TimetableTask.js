@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const TaskSchema = new mongoose.Schema({
+const TimetableTaskSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true }, // frontend-generated ID
   day: { type: String, required: true }, // Day of the week
   name: { type: String, required: true },
@@ -9,4 +9,4 @@ const TaskSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Task', TaskSchema);
+module.exports = mongoose.model('TimetableTask', TimetableTaskSchema);

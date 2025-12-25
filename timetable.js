@@ -1,6 +1,6 @@
-const RoutineModule = (() => {
+const TimetableModule = (() => {
     // State
-    let routines = [];
+    let timetables = [];
     let container = null;
     let clockInterval = null;
 
@@ -11,8 +11,8 @@ const RoutineModule = (() => {
     // Fetch tasks from backend
     async function fetchTasksFromServer() {
         try {
-            const res = await fetch('http://localhost:5000/tasks');
-            routines = await res.json();
+            const res = await fetch('http://localhost:5000/timetable-tasks');
+            timetables = await res.json();
         } catch (err) {
             console.error('Error fetching tasks:', err);
         }
@@ -22,7 +22,7 @@ const RoutineModule = (() => {
     async function init(viewContainer) {
         container = viewContainer;
         await fetchTasksFromServer();
-        renderRoutineView();
+        renderTimetable();
     }
 
     function getFormattedTime() {
@@ -46,7 +46,7 @@ const RoutineModule = (() => {
     }
 
     // Render routine tasks
-    function renderRoutineView() {
+    function renderTimetable() {
         container.innerHTML = `
             <div class="content-header">
                 <div>
@@ -57,14 +57,14 @@ const RoutineModule = (() => {
                     </div>
                 </div>
             </div>
-            <div id="routineList" class="timeline-list"></div>
+            <div id="timetableList" class="timeline-list"></div>
         `;
 
         startClock();
-        const routineList = document.getElementById('routineList');
+        const timetableList = document.getElementById('timetableList');
 
         daysOfWeek.forEach(day => {
-            const dayTasks = routines.filter(t => t.day === day).sort((a, b) => a.time.localeCompare(b.time));
+            const dayTasks = timetables.filter(t => t.day === day).sort((a, b) => a.time.localeCompare(b.time));
 
             const groupEl = document.createElement('div');
             groupEl.className = 'timeline-group';
@@ -76,10 +76,10 @@ const RoutineModule = (() => {
                     <div class="timeline-item">
                         <div class="t-row" style="align-items: center;">
                             <span class="t-time">${task.time}</span>
-                            <span class="t-name">${task.name}${task.desc ? `<span class=\"t-desc\" style=\"font-weight:normal; color:#555; padding-left:80px;\">${task.desc}</span>` : ''}</span>
+                            <span class="t-name">${task.name}${task.desc ? `<span class="t-desc" style="font-weight:normal; color:#555; padding-left:80px;">${task.desc}</span>` : ''}</span>
                             <div class="actions">
-                                <button onclick="window.editTask('routine', '${task.id}')" class="action-btn edit-btn" style="margin-right:8px;">Edit</button>
-                                <button onclick="RoutineModule.deleteTask('${task.id}')" class="action-btn delete-btn">Delete</button>
+                                <button onclick="window.editTask('timetable', '${task.id}')" class="action-btn edit-btn" style="margin-right:8px;">Edit</button>
+                                <button onclick="TimetableModule.deleteTask('${task.id}')" class="action-btn delete-btn">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -91,13 +91,13 @@ const RoutineModule = (() => {
             groupEl.innerHTML = `
                 <div class="timeline-date">
                     <span>${day}</span>
-                    <button class="add-day-task-btn" onclick="window.openRoutineModal({ day: '${day}' })" title="Add task to ${day}">
+                    <button class="add-day-task-btn" onclick="window.openTimetableModal({ day: '${day}' })" title="Add task to ${day}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     </button>
                 </div>
                 ${tasksHtml}
             `;
-            routineList.appendChild(groupEl);
+            timetableList.appendChild(groupEl);
         });
     }
 
@@ -106,19 +106,19 @@ const RoutineModule = (() => {
         if (!taskData.id) taskData.id = Date.now().toString();
 
         try {
-            const res = await fetch('http://localhost:5000/tasks', {
+            const res = await fetch('http://localhost:5000/timetable-tasks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(taskData)
             });
             const savedTask = await res.json();
 
-            const index = routines.findIndex(t => t.id === savedTask.id);
-            if (index !== -1) routines[index] = savedTask;
-            else routines.push(savedTask);
+            const index = timetables.findIndex(t => t.id === savedTask.id);
+            if (index !== -1) timetables[index] = savedTask;
+            else timetables.push(savedTask);
 
-            renderRoutineView();
-            window.dispatchEvent(new CustomEvent('routineUpdated'));
+            renderTimetable();
+            window.dispatchEvent(new CustomEvent('timetableUpdated'));
         } catch (err) {
             console.error('Error saving task:', err);
         }
@@ -127,10 +127,10 @@ const RoutineModule = (() => {
     // Delete a task
     async function deleteTask(id) {
         try {
-            await fetch(`http://localhost:5000/tasks/${id}`, { method: 'DELETE' });
-            routines = routines.filter(t => t.id !== id);
-            renderRoutineView();
-            window.dispatchEvent(new CustomEvent('routineUpdated'));
+            await fetch(`http://localhost:5000/timetable-tasks/${id}`, { method: 'DELETE' });
+            timetables = timetables.filter(t => t.id !== id);
+            renderTimetable();
+            window.dispatchEvent(new CustomEvent('timetableUpdated'));
         } catch (err) {
             console.error('Error deleting task:', err);
         }
@@ -138,21 +138,21 @@ const RoutineModule = (() => {
 
     // Get a specific task
     function getTask(id) {
-        return routines.find(t => t.id === id);
+        return timetables.find(t => t.id === id);
     }
 
-    function getAllRoutines() {
-        return routines;
+    function getAllTimetables() {
+        return timetables;
     }
 
     return {
         init,
-        renderRoutineView,
+        renderTimetable,
         saveTask,
         deleteTask,
         getTask,
-        getAllRoutines
+        getAllTimetables
     };
 })();
 
-window.RoutineModule = RoutineModule;
+window.TimetableModule = TimetableModule;

@@ -40,15 +40,15 @@
             </div>
 
             <div class="nav-right">
-                <a href="index.html" class="logout-link">Log Out</a>
+                <a href="login.html" class="logout-link">Log Out</a>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Routine View -->
-            <div id="routineContainer" class="view-container active">
-                <!-- Content handled by routine.js -->
+            <!-- Timetable View -->
+            <div id="timetableContainer" class="view-container active">
+                <!-- Content handled by timetable.js -->
             </div>
 
             <!-- Timeline View -->
@@ -58,25 +58,26 @@
         </main>
     </div>
 
-    <!-- Routine Modal -->
-    <div id="routineModal" class="modal">
+    <!-- Timetable Modal -->
+    <div id="timetableModal" class="modal">
         <div class="modal-content clean-modal">
-            <span class="close-modal" id="closeRoutineModal">&times;</span>
-            <h2 id="routineModalTitle">Create New Routine Task</h2>
-            <form id="routineTaskForm">
-                <input type="hidden" id="routineTaskId">
-                <input type="hidden" id="routineTaskDay">
+            <span class="close-modal" id="closeTimetableModal">&times;</span>
+            <h2 id="timetableModalTitle">Create New Timetable Task</h2>
+            <form id="timetableTaskForm">
+                <input type="hidden" id="timetableTaskId">
+                <input type="hidden" id="timetableTaskDay">
                 <div class="input-group">
-                    <label for="routineTaskName">Task Name</label>
-                    <input type="text" id="routineTaskName" required placeholder="What needs to be done?">
+                    <label for="timetableTaskName">Task Name</label>
+                    <input type="text" id="timetableTaskName" required placeholder="What needs to be done?">
                 </div>
                 <div class="input-group">
-                    <label for="routineTaskTime">Time (24h)</label>
-                    <input type="text" id="routineTaskTime" class="time-24h" placeholder="HH:MM" maxlength="5" required>
+                    <label for="timetableTaskTime">Time (24h)</label>
+                    <input type="text" id="timetableTaskTime" class="time-24h" placeholder="HH:MM" maxlength="5"
+                        required>
                 </div>
                 <div class="input-group">
-                    <label for="routineTaskDesc">Description (Optional)</label>
-                    <textarea id="routineTaskDesc" rows="3" placeholder="Add details..."></textarea>
+                    <label for="timetableTaskDesc">Description (Optional)</label>
+                    <textarea id="timetableTaskDesc" rows="3" placeholder="Add details..."></textarea>
                 </div>
                 <button type="submit" class="primary-btn full-width">Save Task</button>
             </form>
@@ -101,7 +102,8 @@
                     </div>
                     <div class="input-group">
                         <label for="timelineTaskTime">Time (24h)</label>
-                        <input type="text" id="timelineTaskTime" class="time-24h" placeholder="HH:MM" maxlength="5" required>
+                        <input type="text" id="timelineTaskTime" class="time-24h" placeholder="HH:MM" maxlength="5"
+                            required>
                     </div>
                 </div>
                 <div class="input-group">
@@ -115,8 +117,8 @@
 
     <!-- JS Modules -->
     <script src="timeline.js"></script>
-    <script src="routine.js"></script>
-    <script src="home.js"></script>
+    <script src="timetable.js"></script>
+    <script src="main.js"></script>
 </body>
 
 </html>

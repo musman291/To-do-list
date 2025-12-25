@@ -9,7 +9,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 // Import models
-const Task = require('./model/Task');              // Routine tasks
+const TimetableTask = require('./model/TimetableTask'); // Timetable tasks
 const TimelineTask = require('./model/TimelineTask'); // Timeline tasks
 
 // Initialize Express
@@ -30,24 +30,24 @@ mongoose.connect(process.env.MONGO_URI)
 // ROUTES
 // -----------------------------
 
-// ----- Routine Tasks -----
+// ----- Timetable Tasks -----
 
-// Get all routine tasks
-app.get('/tasks', async (req, res) => {
+// Get all timetable tasks
+app.get('/timetable-tasks', async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await TimetableTask.find();
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Add or update routine task
-app.post('/tasks', async (req, res) => {
+// Add or update timetable task
+app.post('/timetable-tasks', async (req, res) => {
   try {
     const { id, day, name, time, desc, completed } = req.body;
 
-    let task = await Task.findOne({ id });
+    let task = await TimetableTask.findOne({ id });
     if (task) {
       task.day = day;
       task.name = name;
@@ -55,7 +55,7 @@ app.post('/tasks', async (req, res) => {
       task.desc = desc;
       task.completed = completed ?? task.completed;
     } else {
-      task = new Task({ id, day, name, time, desc, completed });
+      task = new TimetableTask({ id, day, name, time, desc, completed });
     }
 
     await task.save();
@@ -65,11 +65,11 @@ app.post('/tasks', async (req, res) => {
   }
 });
 
-// Delete routine task
-app.delete('/tasks/:id', async (req, res) => {
+// Delete timetable task
+app.delete('/timetable-tasks/:id', async (req, res) => {
   try {
-    await Task.findOneAndDelete({ id: req.params.id });
-    res.json({ message: 'Routine task deleted' });
+    await TimetableTask.findOneAndDelete({ id: req.params.id });
+    res.json({ message: 'Timetable task deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
